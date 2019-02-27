@@ -107,69 +107,6 @@ def _files_map(files_list):
         by_names_map[name_] = file_
     return by_names_map
 
-def _build_cc_link_params(
-        ctx,
-        user_link_flags,
-        static_libraries,
-        dynamic_libraries,
-        runtime_artifacts):
-    static_shared = None
-    static_no_shared = None
-    if static_libraries != None and len(static_libraries) > 0:
-        static_shared = cc_common.create_cc_link_params(
-            ctx = ctx,
-            user_link_flags = user_link_flags,
-            libraries_to_link = _to_depset(static_libraries),
-        )
-        static_no_shared = cc_common.create_cc_link_params(
-            ctx = ctx,
-            libraries_to_link = _to_depset(static_libraries),
-        )
-    else:
-        static_shared = cc_common.create_cc_link_params(
-            ctx = ctx,
-            user_link_flags = user_link_flags,
-            libraries_to_link = _to_depset(dynamic_libraries),
-            dynamic_libraries_for_runtime = _to_depset(runtime_artifacts),
-        )
-        static_no_shared = cc_common.create_cc_link_params(
-            ctx = ctx,
-            libraries_to_link = _to_depset(dynamic_libraries),
-            dynamic_libraries_for_runtime = _to_depset(runtime_artifacts),
-        )
-
-    no_static_shared = None
-    no_static_no_shared = None
-    if dynamic_libraries != None and len(dynamic_libraries) > 0:
-        no_static_shared = cc_common.create_cc_link_params(
-            ctx = ctx,
-            user_link_flags = user_link_flags,
-            libraries_to_link = _to_depset(dynamic_libraries),
-            dynamic_libraries_for_runtime = _to_depset(runtime_artifacts),
-        )
-        no_static_no_shared = cc_common.create_cc_link_params(
-            ctx = ctx,
-            libraries_to_link = _to_depset(dynamic_libraries),
-            dynamic_libraries_for_runtime = _to_depset(runtime_artifacts),
-        )
-    else:
-        no_static_shared = cc_common.create_cc_link_params(
-            ctx = ctx,
-            user_link_flags = user_link_flags,
-            libraries_to_link = _to_depset(static_libraries),
-        )
-        no_static_no_shared = cc_common.create_cc_link_params(
-            ctx = ctx,
-            libraries_to_link = _to_depset(static_libraries),
-        )
-
-    return {
-        "static_mode_params_for_dynamic_library": static_shared,
-        "static_mode_params_for_executable": static_no_shared,
-        "dynamic_mode_params_for_dynamic_library": no_static_shared,
-        "dynamic_mode_params_for_executable": no_static_no_shared,
-    }
-
 def targets_windows(ctx, cc_toolchain):
     """ Returns true if build is targeting Windows
     Args:
@@ -349,6 +286,7 @@ def absolutize_path_in_str(workspace_name, root_str, text, force = False):
     new_text = _prefix(text, "external/", root_str)
     if new_text == text:
         new_text = _prefix(text, workspace_name + "/", root_str)
+
     # absolutize relative by adding our working directory
     # this works because we ru on windows under msys now
     if force and new_text == text and not text.startswith("/"):

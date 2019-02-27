@@ -427,7 +427,6 @@ def _list(item):
 def _copy_deps_and_tools(files):
     lines = []
     lines += _symlink_contents_to_dir("lib", files.libs)
-    lines += _symlink_contents_to_dir("include", files.headers + files.include_dirs)
 
     if files.tools_files:
         lines.append("##mkdirs## $$EXT_BUILD_DEPS$$/bin")
@@ -635,17 +634,14 @@ def _define_out_cc_info(ctx, attrs, inputs, outputs):
 
     return cc_common.merge_cc_infos(cc_infos = [cc_info, inputs_info])
 
-def _extract_link_params(cc_linking):
-    return [
-        cc_linking.static_mode_params_for_dynamic_library,
-        cc_linking.static_mode_params_for_executable,
-        cc_linking.dynamic_mode_params_for_dynamic_library,
-        cc_linking.dynamic_mode_params_for_executable,
-    ]
-
 def _collect_libs(cc_linking):
     libs = []
-    for params in _extract_link_params(cc_linking):
-        libs += [lib.artifact() for lib in params.libraries_to_link]
-        libs += params.dynamic_libraries_for_runtime.to_list()
+    for lib_to_link in cc_linking.libraries_to_link:
+        libs += [f for f in [
+            lib_to_link.static_library,
+            lib_to_link.dynamic_library,
+            lib_to_link.pic_static_library,
+            lib_to_link.interface_library,
+        ] if f != None]
+
     return collections.uniq(libs)
