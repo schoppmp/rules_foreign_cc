@@ -36,7 +36,8 @@ def call_shell(shell_context, method_, *args):
     return result
 
 def _wrap_if_needed(arg):
-    return "\"" + arg + "\"" if arg.find(" ") >= 0 else arg
+    # We always need quotes around the arguments in the shell script.
+    return "\"" + arg + "\""
 
 def check_argument_types(method_, args_list):
     descriptor = PLATFORM_COMMANDS[method_]

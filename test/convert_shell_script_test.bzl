@@ -156,7 +156,7 @@ def _do_function_call_with_body_test(ctx):
     cases = {
         "##touch## a/b/c": {
             "text": "function touch() {\n  call_touch $1\n}",
-            "call": "touch a/b/c",
+            "call": "touch \"a/b/c\"",
         },
         "##cleanup_function## \"echo $$CLEANUP_MSG$$\" \"echo $$KEEP_MSG1$$ && echo $$KEEP_MSG2$$\"": {
             "text": """function cleanup_function() {
@@ -227,13 +227,13 @@ def _script_conversion_test(ctx):
 local target="$2"
 mkdir -p $target
 if [[ -f $1 ]]; then
-symlink_to_dir $1 $target
+symlink_to_dir "$1" "$target"
 return 0
 fi
 
 local children=$(find $1 -maxdepth 1 -mindepth 1)
 for child in $children; do
-symlink_to_dir $child $target
+symlink_to_dir "$child" "$target"
 done
 
 }
@@ -252,7 +252,8 @@ else
 fi
 
 }
-symlink_contents_to_dir a b"""
+symlink_contents_to_dir "a" "b"\
+"""
 
     shell_ = struct(
         symlink_contents_to_dir = _symlink_contents_to_dir,
